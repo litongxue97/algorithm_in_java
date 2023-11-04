@@ -71,7 +71,6 @@ public class SkipList {
             return cur;
         }
 
-        //put方法
         public void put(K key, V value) {
             if (key == null) {
                 return ;
@@ -112,9 +111,81 @@ public class SkipList {
                 }
             }
         }
+
+        public V get(K key) {
+            if (key == null) {
+                return null;
+            }
+            SkipListNode<K,V> less = mostRightLessNodeInTree(key);
+            SkipListNode<K,V> next = less.nextNodes.get(0);
+            return next != null && next.isKeyEqual(key) ? next.val : null;
+        }
+
+        public void remove(K key) {
+            if (containsKey(key)) {
+                size --;
+                int level = maxLevel;
+                SkipListNode<K,V> pre = head;
+                while (level >= 0) {
+                    pre = mostRightLessNodeInLevel(key, pre, level);
+                    SkipListNode<K, V> next = pre.nextNodes.get(level);
+                    if (next != null && next.isKeyEqual(key)) {
+                        pre.nextNodes.set(level, next.nextNodes.get(level));
+                    }
+                    //删除head中空余的位置，可选
+                    if (level != 0 && pre == head && pre.nextNodes.get(level) == null) {
+                        head.nextNodes.remove(level);
+                        maxLevel --;
+                    }
+                    level --;
+                }
+            }
+        }
+
+        public boolean containsKey(K key) {
+            if (key == null) {
+                return false;
+            }
+            SkipListNode<K,V> less = mostRightLessNodeInTree(key);
+            SkipListNode<K,V> next = less.nextNodes.get(0);
+            return next != null && next.isKeyEqual(key);
+        }
+
+        public int size() {
+            return size;
+        }
+    }
+
+    // for test
+    public static void printAll(SkipListMap<String, String> obj) {
+        for (int i = obj.maxLevel; i >= 0; i--) {
+            System.out.print("Level " + i + " : ");
+            SkipListNode<String, String> cur = obj.head;
+            while (cur.nextNodes.get(i) != null) {
+                SkipListNode<String, String> next = cur.nextNodes.get(i);
+                System.out.print("(" + next.key + " , " + next.val + ") ");
+                cur = next;
+            }
+            System.out.println();
+        }
     }
 
     public static void main(String[] args) {
-        System.out.println("1111");
+        SkipListMap<String, String> test = new SkipListMap<>();
+        printAll(test);
+        System.out.println("======================");
+        test.put("A", "10");
+        printAll(test);
+        System.out.println("======================");
+        test.remove("A");
+        printAll(test);
+        System.out.println("======================");
+        test.put("E", "E");
+        test.put("B", "B");
+        test.put("A", "A");
+        test.put("F", "F");
+        test.put("C", "C");
+        test.put("D", "D");
+        printAll(test);
     }
 }
